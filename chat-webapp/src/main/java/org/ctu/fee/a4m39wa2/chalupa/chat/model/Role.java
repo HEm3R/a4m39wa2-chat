@@ -14,13 +14,19 @@ import java.io.Serializable;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @EqualsAndHashCode(of = "id", callSuper = false)
+@NoArgsConstructor
 public class Role extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    public Role(BusinessRole role) {
+        this.role = role;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
