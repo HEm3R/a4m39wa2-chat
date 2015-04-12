@@ -1,0 +1,19 @@
+# Eclipse workspace
+.classpath
+.project
+.settings/
+
+# IntelliJ IDEA workspace
+*.iml
+.idea/
+
+# NetBeans workspace
+.nb-gradle
+private/
+
+# OS-specific files
+.DS_Store
+Icon*
+
+# Maven
+target/
