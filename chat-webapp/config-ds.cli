@@ -1,0 +1,9 @@
+#
+# create XA datasource
+#
+if (outcome != success) of /subsystem=datasources/xa-data-source=postgresXADS:read-resource
+    xa-data-source add --name=postgresXADS --driver-name=postgresql-9.4-1201.jdbc41.jar --jndi-name=java:jboss/datasources/postgresXADS --xa-datasource-class=org.postgresql.xa.PGXADataSource --user-name=a4m39wa2_chat --password=a4m39wa2_chat
+    /subsystem=datasources/xa-data-source=postgresXADS/xa-datasource-properties=ServerName:add(value=127.0.0.1)
+    /subsystem=datasources/xa-data-source=postgresXADS/xa-datasource-properties=PortNumber:add(value=5432)
+    /subsystem=datasources/xa-data-source=postgresXADS/xa-datasource-properties=DatabaseName:add(value=a4m39wa2_chat)
+end-if

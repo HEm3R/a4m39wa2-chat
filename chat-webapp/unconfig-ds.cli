@@ -1,0 +1,6 @@
+#
+# remove XA datasource
+#
+if (outcome == success) of /subsystem=datasources/xa-data-source=postgresXADS:read-resource
+    xa-data-source remove --name=postgresXADS
+end-if
