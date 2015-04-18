@@ -1,15 +1,15 @@
 package org.ctu.fee.a4m39wa2.chalupa.chat.api.resources;
 
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.SelectionContext;
-import org.ctu.fee.a4m39wa2.chalupa.chat.api.dto.RoleDto;
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.dto.UserDto;
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.exceptions.DuplicateKeyValueException;
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.exceptions.RequestedEntityNotFoundException;
-import org.ctu.fee.a4m39wa2.chalupa.chat.api.filters.Field;
-import org.ctu.fee.a4m39wa2.chalupa.chat.api.filters.Selectable;
+import org.ctu.fee.a4m39wa2.chalupa.chat.api.filters.selectable.Field;
+import org.ctu.fee.a4m39wa2.chalupa.chat.api.filters.selectable.Selectable;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.UserCrud;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.exceptions.UniqueConstraintViolationException;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.User;
+import org.ctu.fee.a4m39wa2.chalupa.chat.security.BusinessRole;
 import org.ctu.fee.a4m39wa2.chalupa.chat.validation.group.Create;
 
 import javax.inject.Inject;
@@ -92,9 +92,7 @@ public class UserResource {
             throw new RequestedEntityNotFoundException(createGetUserUri(id));
         }
 
-        final List<RoleDto> roleDtos = mapperFacade.mapAsList(user.getRoles(), RoleDto.class);
-
-        final GenericEntity<List<RoleDto>> result = new GenericEntity<List<RoleDto>>(roleDtos) {};
+        final GenericEntity<List<BusinessRole>> result = new GenericEntity<List<BusinessRole>>(user.getBusinessRoles()) {};
         return Response.ok(result).build();
     }
 
