@@ -10,6 +10,7 @@ import org.ctu.fee.a4m39wa2.chalupa.chat.logic.UserCrud;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.exceptions.UniqueConstraintViolationException;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.User;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.BusinessRole;
+import org.ctu.fee.a4m39wa2.chalupa.chat.security.Secured;
 import org.ctu.fee.a4m39wa2.chalupa.chat.validation.group.Create;
 
 import javax.inject.Inject;
@@ -51,6 +52,7 @@ public class UserResource {
     @Inject
     private SelectionContext selectionContext;
 
+    @Secured(BusinessRole.ADMIN)
     @GET
     @Selectable(limit = 2, fields = {@Field("username")})
     public Response getAllUsers() {
@@ -73,6 +75,7 @@ public class UserResource {
 
     }
 
+    @Secured(BusinessRole.ADMIN)
     @GET
     @Path("/{id : \\d+}")
     public Response getUser(@PathParam("id") long id) {
@@ -84,6 +87,7 @@ public class UserResource {
         return Response.ok(result).build();
     }
 
+    @Secured(BusinessRole.ADMIN)
     @GET
     @Path("/{id : \\d+}/roles")
     public Response getUserRoles(@PathParam("id") long id) {
