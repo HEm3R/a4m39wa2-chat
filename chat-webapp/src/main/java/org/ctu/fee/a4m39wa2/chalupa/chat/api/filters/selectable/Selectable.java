@@ -1,4 +1,4 @@
-package org.ctu.fee.a4m39wa2.chalupa.chat.api.filters;
+package org.ctu.fee.a4m39wa2.chalupa.chat.api.filters.selectable;
 
 import javax.ws.rs.NameBinding;
 
