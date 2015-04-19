@@ -1,5 +1,8 @@
 package org.ctu.fee.a4m39wa2.chalupa.chat.api.producers;
 
+import org.ctu.fee.a4m39wa2.chalupa.chat.api.dto.error.MessageDto;
+import org.ctu.fee.a4m39wa2.chalupa.chat.model.Message;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
@@ -17,6 +20,13 @@ public class OrikaProducer {
         mapperFactory = new DefaultMapperFactory.Builder().build();
         // register custom conversions and mappings
         mapperFacade = mapperFactory.getMapperFacade();
+
+        mapperFactory
+                .registerClassMap(mapperFactory.classMap(Message.class, MessageDto.class)
+                .field("user.username", "author")
+                .field("user.id", "authorId")
+                .byDefault().toClassMap()
+        );
     }
 
     @Produces

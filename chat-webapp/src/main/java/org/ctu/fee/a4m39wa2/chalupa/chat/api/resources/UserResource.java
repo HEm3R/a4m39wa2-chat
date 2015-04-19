@@ -61,7 +61,7 @@ public class UserResource {
 
     @Secured(BusinessRole.ADMIN)
     @GET
-    @Selectable(limit = 2, fields = {@Field("username")})
+    @Selectable(limit = 5, fields = {@Field("username")})
     public Response getAllUsers() {
         final List<User> users = userCrud.findAll(selectionContext);
         final List<UserDto> userDtos = mapperFacade.mapAsList(users, UserDto.class);
@@ -114,7 +114,7 @@ public class UserResource {
     @GET
     @Path("/{id : \\d+}/roles")
     public Response getUserRoles(@PathParam("id") long id) {
-        final User user = userCrud.find(id);
+        final User user = userCrud.find(id, true);
         if (user == null) {
             throw new RequestedEntityNotFoundException(createGetUserUri(id));
         }

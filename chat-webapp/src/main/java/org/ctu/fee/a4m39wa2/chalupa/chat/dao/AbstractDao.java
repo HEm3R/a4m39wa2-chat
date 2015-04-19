@@ -78,7 +78,8 @@ public class AbstractDao<T extends BaseEntity> {
     public List<T> findAll(
             Integer offset, Integer limit,
             List<TwoValueObject<String, OrderDirection>> orderBy,
-            List<Param<T>> params) {
+            List<Param<T>> params,
+            FetchCreator<T>... fetchCreators) {
 
         final CriteriaBuilder cb = em.getCriteriaBuilder();
         final CriteriaQuery<T> criteriaQuery = cb.createQuery(getEntityClass());
@@ -88,6 +89,10 @@ public class AbstractDao<T extends BaseEntity> {
         params.forEach(p -> p.accept(predicates, cb, root));
         if (!predicates.isEmpty()) {
             criteriaQuery.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+        }
+
+        for (FetchCreator fc : fetchCreators) {
+            fc.accept(root);
         }
 
         if (orderBy != null) {

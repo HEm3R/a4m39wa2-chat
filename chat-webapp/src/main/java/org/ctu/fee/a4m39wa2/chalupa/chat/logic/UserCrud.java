@@ -30,7 +30,15 @@ public class UserCrud  {
     private UserDao dao;
 
     public User find(long id) {
-        return dao.find(id);
+        return find(id, false);
+    }
+
+    public User find(long id, boolean fetchRoles) {
+        User user =  dao.find(id);
+        if (user != null && fetchRoles) {
+            user.getRoles().size();
+        }
+        return user;
     }
 
     public List<User> findAll(SelectionContext selectionContext) {

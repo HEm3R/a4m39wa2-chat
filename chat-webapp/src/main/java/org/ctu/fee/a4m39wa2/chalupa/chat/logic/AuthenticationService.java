@@ -20,6 +20,7 @@ public class AuthenticationService {
         final User user = dao.findByUsername(username);
         if (user != null) {
             if (PasswordUtils.generatePasswordHash(password, username).equals(user.getPasswordHash())) {
+                user.getRoles().size(); // load roles
                 return user; // authenticated
             }
         }
