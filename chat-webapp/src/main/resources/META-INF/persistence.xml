@@ -6,6 +6,7 @@
 
     <persistence-unit name="primary" transaction-type="JTA">
         <jta-data-source>java:jboss/datasources/postgresXADS</jta-data-source>
+        <jar-file>lib/chat-model.jar</jar-file>
         <properties>
             <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
             <property name="hibernate.ejb.naming_strategy" value="org.hibernate.cfg.ImprovedNamingStrategy"/>

@@ -1,6 +1,6 @@
 package org.ctu.fee.a4m39wa2.chalupa.chat.model;
 
-import org.ctu.fee.a4m39wa2.chalupa.chat.security.BusinessRole;
+import org.ctu.fee.a4m39wa2.chalupa.chat.access.BusinessRole;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;

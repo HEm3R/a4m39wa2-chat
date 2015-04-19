@@ -9,11 +9,12 @@ import org.ctu.fee.a4m39wa2.chalupa.chat.api.filters.selectable.Field;
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.filters.selectable.Selectable;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.MessageCrud;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.RoomCrud;
+import org.ctu.fee.a4m39wa2.chalupa.chat.logic.RoomLogGenerator;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.exceptions.UniqueConstraintViolationException;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.Message;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.Room;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.Authenticated;
-import org.ctu.fee.a4m39wa2.chalupa.chat.security.BusinessRole;
+import org.ctu.fee.a4m39wa2.chalupa.chat.access.BusinessRole;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.Secured;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.SecurityContext;
 import org.ctu.fee.a4m39wa2.chalupa.chat.validation.group.Create;
@@ -57,6 +58,9 @@ public class RoomResource {
 
     @Inject
     private MessageCrud messageCrud;
+
+    @Inject
+    private RoomLogGenerator logGenerator;
 
     @Inject
     private MapperFacade mapperFacade;
@@ -167,6 +171,16 @@ public class RoomResource {
     @Path("/{id : \\d+}/messages/{messageId : \\d+}")
     public Response removeMessage(@PathParam("id") long id, @PathParam("messageId") long messageId) {
         messageCrud.remove(messageId);
+        return Response.noContent().build();
+    }
+
+    @Secured(BusinessRole.ADMIN)
+    @PUT
+    @Path("/{id : \\d+}/log")
+    public Response generateLog(@PathParam("id") long id) {
+        Room room = findRoom(id);
+        logGenerator.requestLogGeneration(room);
+
         return Response.noContent().build();
     }
 

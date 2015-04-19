@@ -1,6 +1,6 @@
 package org.ctu.fee.a4m39wa2.chalupa.chat.model;
 
-import org.ctu.fee.a4m39wa2.chalupa.chat.security.BusinessRole;
+import org.ctu.fee.a4m39wa2.chalupa.chat.access.BusinessRole;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 

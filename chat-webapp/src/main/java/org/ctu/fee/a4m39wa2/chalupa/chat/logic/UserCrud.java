@@ -7,7 +7,7 @@ import org.ctu.fee.a4m39wa2.chalupa.chat.dao.UserDao;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.exceptions.UniqueConstraintViolationException;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.Role;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.User;
-import org.ctu.fee.a4m39wa2.chalupa.chat.security.BusinessRole;
+import org.ctu.fee.a4m39wa2.chalupa.chat.access.BusinessRole;
 import org.ctu.fee.a4m39wa2.chalupa.chat.utils.PasswordUtils;
 
 import javax.ejb.ConcurrencyManagement;

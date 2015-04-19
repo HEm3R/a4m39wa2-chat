@@ -10,7 +10,7 @@ import org.ctu.fee.a4m39wa2.chalupa.chat.logic.UserCrud;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.exceptions.UniqueConstraintViolationException;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.User;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.Authenticated;
-import org.ctu.fee.a4m39wa2.chalupa.chat.security.BusinessRole;
+import org.ctu.fee.a4m39wa2.chalupa.chat.access.BusinessRole;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.Secured;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.SecurityContext;
 import org.ctu.fee.a4m39wa2.chalupa.chat.validation.group.Create;

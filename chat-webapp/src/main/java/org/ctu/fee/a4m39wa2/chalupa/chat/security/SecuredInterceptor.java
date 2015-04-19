@@ -1,5 +1,7 @@
 package org.ctu.fee.a4m39wa2.chalupa.chat.security;
 
+import org.ctu.fee.a4m39wa2.chalupa.chat.access.BusinessRole;
+
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
