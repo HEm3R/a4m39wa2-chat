@@ -1,6 +1,8 @@
 package org.ctu.fee.a4m39wa2.chalupa.chat.logic;
 
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.SelectionContext;
+import org.ctu.fee.a4m39wa2.chalupa.chat.dao.EqualParam;
+import org.ctu.fee.a4m39wa2.chalupa.chat.dao.Param;
 import org.ctu.fee.a4m39wa2.chalupa.chat.dao.UserDao;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.exceptions.UniqueConstraintViolationException;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.Role;
@@ -13,6 +15,8 @@ import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
-public class UserCrud {
+public class UserCrud  {
 
     @Inject
     private UserDao dao;
@@ -30,7 +34,22 @@ public class UserCrud {
     }
 
     public List<User> findAll(SelectionContext selectionContext) {
-        return dao.findAll(selectionContext.getOffset(), selectionContext.getLimit(), selectionContext.getOrderBy());
+
+        List<Param<User>> where = new ArrayList<>(selectionContext.getWhere().size());
+        selectionContext.getWhere().forEach(w -> where.add(new EqualParam<>(w.getFirst(), w.getSecond())));
+
+        int count = dao.countAll(where);
+        selectionContext.setTotal(count);
+        if (count == 0) {
+            return Collections.emptyList();
+        }
+
+        return dao.findAll(
+                selectionContext.getOffset(),
+                selectionContext.getLimit(),
+                selectionContext.getOrderBy(),
+                where
+        );
     }
 
     public User create(String username, String password) throws UniqueConstraintViolationException {
@@ -49,6 +68,11 @@ public class UserCrud {
 
         dao.persist(user);
         return user;
+    }
+
+    public void changePassword(User user, String password) {
+        user.setPasswordHash(PasswordUtils.generatePasswordHash(password, user.getUsername()));
+        dao.update(user);
     }
 
     private boolean isUnique(String username) {

@@ -27,10 +27,12 @@ public class SelectionRequestFilter implements ContainerRequestFilter {
     private static final String OFFSET_HEADER = "X-Offset";
     private static final String LIMIT_HEADER = "X-Limit";
     private static final String ORDER_BY_HEADER = "X-Order-By";
+    private static final String WHERE_HEADER = "X-Where";
 
     private static final String OFFSET_PARAM = "offset";
     private static final String LIMIT_PARAM = "limit";
     private static final String ORDER_BY_PARAM = "orderBy";
+    private static final String WHERE_PARAM = "where";
 
     private Selectable selectable;
     private List<TwoValueObject<String, OrderDirection>> defaultOrders = new LinkedList<>();
@@ -54,8 +56,34 @@ public class SelectionRequestFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
-        final List<String> orderBy = getAllParams(requestContext, ORDER_BY_HEADER, ORDER_BY_PARAM);
+        filterWhere(requestContext);
+        filterOrderBy(requestContext);
+        filterOffset(requestContext);
+        filterLimit(requestContext);
+    }
 
+    private void filterWhere(ContainerRequestContext requestContext) {
+        final List<String> where = getAllParams(requestContext, WHERE_HEADER, WHERE_PARAM);
+        final List<TwoValueObject<String, String>> wheres = new LinkedList<>();
+        if (where != null) {
+            for (String o : where) {
+                final String[] components = o.split(DELIMITER, 2);
+                final String fieldName = components[0];
+                final String entityField = allowedFields.get(fieldName);
+
+                if (entityField == null) {
+                    throw new InvalidFieldException(WHERE_PARAM, "invalid where field " + components[0]);
+                }
+
+                final String value = components.length == 2 ? components[1] : "";
+                wheres.add(new TwoValueObject<>(entityField, value));
+            }
+        }
+        selectionContext.setWhere(wheres);
+    }
+
+    private void filterOrderBy(ContainerRequestContext requestContext) {
+        final List<String> orderBy = getAllParams(requestContext, ORDER_BY_HEADER, ORDER_BY_PARAM);
         if (orderBy != null) {
             final List<TwoValueObject<String, OrderDirection>> orders = new LinkedList<>();
             for (String o : orderBy) {
@@ -75,20 +103,24 @@ public class SelectionRequestFilter implements ContainerRequestFilter {
                         throw new InvalidFieldException(ORDER_BY_PARAM, "invalid ordering " + components[1]);
                     }
                 }
-                orders.add(new TwoValueObject<>(fieldName, direction));
+                orders.add(new TwoValueObject<>(entityField, direction));
             }
             selectionContext.setOrderBy(orders);
         } else { // defaults
             selectionContext.setOrderBy(defaultOrders);
         }
+    }
 
+    private void filterOffset(ContainerRequestContext requestContext) {
         final Integer offset = getNumericParam(requestContext, OFFSET_HEADER, OFFSET_PARAM);
         if (offset != null) {
             selectionContext.setOffset(offset);
         } else {
             selectionContext.setOffset(0);
         }
+    }
 
+    private void filterLimit(ContainerRequestContext requestContext) {
         final Integer limit = getNumericParam(requestContext, LIMIT_HEADER, LIMIT_PARAM);
         if (limit != null) {
             if (limit > selectable.max()) {
@@ -98,7 +130,6 @@ public class SelectionRequestFilter implements ContainerRequestFilter {
         } else {
             selectionContext.setLimit(selectable.limit());
         }
-
     }
 
     private String getParam(ContainerRequestContext requestContext, String headerName, String paramName) {

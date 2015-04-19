@@ -1,14 +1,14 @@
 package org.ctu.fee.a4m39wa2.chalupa.chat.api.resources;
 
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.SelectionContext;
-import org.ctu.fee.a4m39wa2.chalupa.chat.api.dto.UserDto;
+import org.ctu.fee.a4m39wa2.chalupa.chat.api.dto.RoomDto;
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.exceptions.DuplicateKeyValueException;
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.exceptions.RequestedEntityNotFoundException;
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.filters.selectable.Field;
 import org.ctu.fee.a4m39wa2.chalupa.chat.api.filters.selectable.Selectable;
-import org.ctu.fee.a4m39wa2.chalupa.chat.logic.UserCrud;
+import org.ctu.fee.a4m39wa2.chalupa.chat.logic.RoomCrud;
 import org.ctu.fee.a4m39wa2.chalupa.chat.logic.exceptions.UniqueConstraintViolationException;
-import org.ctu.fee.a4m39wa2.chalupa.chat.model.User;
+import org.ctu.fee.a4m39wa2.chalupa.chat.model.Room;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.Authenticated;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.BusinessRole;
 import org.ctu.fee.a4m39wa2.chalupa.chat.security.Secured;
@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -40,15 +41,16 @@ import java.util.List;
 
 import ma.glasnost.orika.MapperFacade;
 
-@Path("/users")
+@Authenticated
+@Path("/rooms")
 @Produces(MediaType.APPLICATION_JSON)
-public class UserResource {
+public class RoomResource {
 
     @Context
     private UriInfo uriInfo;
 
     @Inject
-    private UserCrud userCrud;
+    private RoomCrud roomCrud;
 
     @Inject
     private MapperFacade mapperFacade;
@@ -59,72 +61,74 @@ public class UserResource {
     @Inject
     private SelectionContext selectionContext;
 
-    @Secured(BusinessRole.ADMIN)
     @GET
-    @Selectable(limit = 2, fields = {@Field("username")})
-    public Response getAllUsers() {
-        final List<User> users = userCrud.findAll(selectionContext);
-        final List<UserDto> userDtos = mapperFacade.mapAsList(users, UserDto.class);
+    @Selectable(limit = 2, fields = {@Field("name")})
+    public Response getAllRooms() {
+        final List<Room> rooms = roomCrud.findAll(selectionContext);
+        final List<RoomDto> roomDtos = mapperFacade.mapAsList(rooms, RoomDto.class);
 
-        final GenericEntity<List<UserDto>> result = new GenericEntity<List<UserDto>>(userDtos) {};
+        final GenericEntity<List<RoomDto>> result = new GenericEntity<List<RoomDto>>(roomDtos) {};
         return Response.ok(result).build();
     }
 
+    @Secured(BusinessRole.ADMIN)
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createUser(@Valid @ConvertGroup(from = Default.class, to = Create.class) @NotNull UserDto userDto) {
+    public Response createRoom(@Valid @ConvertGroup(from = Default.class, to = Create.class) @NotNull RoomDto roomDto) {
         try {
-            final User user = userCrud.create(userDto.getUsername(), userDto.getPassword());
-            return Response.created(createGetUserUri(user.getId())).build();
+            final Room room = roomCrud.create(roomDto.getName());
+            return Response.created(createGetRoomUri(room.getId())).build();
         } catch (UniqueConstraintViolationException e) {
             throw new DuplicateKeyValueException(e.getField());
         }
 
     }
 
-    @Authenticated
+    @Secured(BusinessRole.ADMIN)
     @PUT
     @Path("/{id : \\d+}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response changeUserPassword(
+    public Response changeRoomName(
             @PathParam("id") long id,
-            @Valid @ConvertGroup(from = Default.class, to = Update.class) @NotNull UserDto userDto) {
+            @Valid @ConvertGroup(from = Default.class, to = Update.class) @NotNull RoomDto roomDto) {
 
-        if (!securityContext.getUser().getId().equals(id)) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        Room room = findRoom(id);
+
+        try {
+            roomCrud.changeName(room, roomDto.getName());
+        } catch (UniqueConstraintViolationException e) {
+            throw new DuplicateKeyValueException(e.getField());
         }
 
-        userCrud.changePassword(securityContext.getUser(), userDto.getPassword());
         return Response.noContent().build();
     }
 
-    @Secured(BusinessRole.ADMIN)
     @GET
     @Path("/{id : \\d+}")
-    public Response getUser(@PathParam("id") long id) {
-        final User user = userCrud.find(id);
-        if (user == null) {
-            throw new RequestedEntityNotFoundException(createGetUserUri(id));
-        }
-        final UserDto result = mapperFacade.map(user, UserDto.class);
+    public Response getRoom(@PathParam("id") long id) {
+        Room room = findRoom(id);
+        final RoomDto result = mapperFacade.map(room, RoomDto.class);
         return Response.ok(result).build();
     }
 
     @Secured(BusinessRole.ADMIN)
-    @GET
-    @Path("/{id : \\d+}/roles")
-    public Response getUserRoles(@PathParam("id") long id) {
-        final User user = userCrud.find(id);
-        if (user == null) {
-            throw new RequestedEntityNotFoundException(createGetUserUri(id));
-        }
-
-        final GenericEntity<List<BusinessRole>> result = new GenericEntity<List<BusinessRole>>(user.getBusinessRoles()) {};
-        return Response.ok(result).build();
+    @DELETE
+    @Path("/{id : \\d+}")
+    public Response deleteRoom(@PathParam("id") long id) {
+        roomCrud.remove(id);
+        return Response.noContent().build();
     }
 
-    private URI createGetUserUri(Long id) {
+    private Room findRoom(long id) {
+        Room room = roomCrud.find(id);
+        if (room == null) {
+            throw new RequestedEntityNotFoundException(createGetRoomUri(id));
+        }
+        return room;
+    }
+
+    private URI createGetRoomUri(Long id) {
         final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
-        return uriBuilder.path(UserResource.class).path("/{id : \\d+}").build(id);
+        return uriBuilder.path(RoomResource.class).path("/{id : \\d+}").build(id);
     }
 }

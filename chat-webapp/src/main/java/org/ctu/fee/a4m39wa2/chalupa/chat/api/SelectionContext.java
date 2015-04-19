@@ -17,6 +17,8 @@ public class SelectionContext implements Serializable {
     private static final long serialVersionUID = 1;
 
     // request meta-data
+    @Getter @Setter private List<TwoValueObject<String, String>> where; // where eq
+
     @Getter @Setter private List<TwoValueObject<String, OrderDirection>> orderBy;
     @Getter @Setter private int offset;
     @Getter @Setter private int limit;

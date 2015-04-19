@@ -11,6 +11,8 @@ public abstract class BaseEntity implements Serializable {
 
     public abstract Long getId();
 
+    public abstract void setId(Long id);
+
     @Override
     public String toString() {
         return getClass() + "(id=" + getId() + ')';

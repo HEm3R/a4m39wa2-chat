@@ -3,6 +3,7 @@ package org.ctu.fee.a4m39wa2.chalupa.chat.model;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -30,6 +31,6 @@ public class Room extends BaseEntity implements Serializable {
     @Length(max = 30)
     @Getter @Setter private String name;
 
-    @OneToMany(mappedBy = "room")
+    @OneToMany(mappedBy = "room", cascade = CascadeType.REMOVE)
     @Getter @Setter List<Message> messages;
 }
