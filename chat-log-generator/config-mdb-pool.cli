@@ -1,0 +1,6 @@
+#
+# create new pool for MDB
+#
+if (outcome != success) of /subsystem=ejb3/strict-max-bean-instance-pool=log-file-generator-mdb-pool:read-resource
+    /subsystem=ejb3/strict-max-bean-instance-pool=log-file-generator-mdb-pool:add(max-pool-size=1, timeout=35, timeout-unit=MINUTES)
+end-if

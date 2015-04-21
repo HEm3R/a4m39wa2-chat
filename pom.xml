@@ -9,8 +9,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>chat-webapp</module>
         <module>chat-model</module>
+        <module>chat-webapp</module>
+        <module>chat-log-generator</module>
     </modules>
 
     <properties>
@@ -55,6 +56,11 @@
                 <artifactId>wildfly-security</artifactId>
                 <version>8.2.0.Final</version>
             </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.12</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -77,6 +83,11 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
