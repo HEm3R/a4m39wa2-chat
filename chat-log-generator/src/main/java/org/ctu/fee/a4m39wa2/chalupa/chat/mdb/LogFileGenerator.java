@@ -1,56 +1,75 @@
 package org.ctu.fee.a4m39wa2.chalupa.chat.mdb;
 
-import org.jboss.ejb3.annotation.Pool;
-import org.jboss.ejb3.annotation.ResourceAdapter;
-
 import org.ctu.fee.a4m39wa2.chalupa.chat.dao.EqualParam;
 import org.ctu.fee.a4m39wa2.chalupa.chat.dao.MessageDao;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.Message;
 import org.ctu.fee.a4m39wa2.chalupa.chat.model.Room;
 
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
+import javax.ejb.Asynchronous;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.Singleton;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
-import javax.jms.JMSException;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@ResourceAdapter("activemq-ra")
-@MessageDriven(
-        name = "MessageMDBSample",
-        activationConfig = {
-                @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:/activemq/chatQueue"),
-                @ActivationConfigProperty(propertyName = "ConnectionFactory", propertyValue = "chat-log-generator-factory")
-        }
-)
-@Pool("log-file-generator-mdb-pool")
-public class LogFileGenerator implements MessageListener {
+@Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@TransactionManagement(TransactionManagementType.BEAN)
+public class LogFileGenerator {
 
     @Inject
     private MessageDao messageDao;
 
-    @Override
-    public void onMessage(javax.jms.Message message) {
-        if (message instanceof ObjectMessage) {
-            ObjectMessage objectMessage = (ObjectMessage) message;
-            try {
-                if (objectMessage.getObject() instanceof Room) {
-                    Room room = (Room) objectMessage.getObject();
-                    List<Message> messages = messageDao.findAll(
-                            null, null, null, Arrays.asList(new EqualParam<>("room", room.getId().toString())), (root -> root.fetch("user"))
-                    );
-                    log.info("KUAAAA {}", messages);
+    @Asynchronous
+    public void generate(Room room) {
+        List<Message> messages = getMessages(room);
+        log.info("LoadMessages to write: {}", messages.size());
+        writeMessages(room, messages);
+
+        try {
+            Thread.sleep(TimeUnit.MINUTES.toMillis(5));
+        } catch (InterruptedException e) {
+            log.error("Could not simulate time-consuming processing", e);
+        }
+
+        log.info("Log generation completed");
+    }
+
+    // We need to fetch users for messages, do not use room.getMessages directly
+    private List<Message> getMessages(Room room) {
+
+        return messageDao.findAll(
+                null,
+                null,
+                null,
+                Arrays.asList(new EqualParam<>("room", room.getId().toString())),
+                (root -> root.fetch("user"))
+        );
+    }
+
+    private void writeMessages(Room room, List<Message> messages) {
+        try {
+            File temp = File.createTempFile("room-" + room.getId() + "-" + new Date().getTime(), ".log");
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp))) {
+                for (Message m : messages) {
+                    bw.write(m.getUser().getUsername() + "::" + m.getText() + "\n");
                 }
-            } catch (JMSException e) {
-                log.error("", e);
             }
+        } catch (IOException e) {
+            log.error("Could not create log file with messages of room", e);
         }
     }
 }

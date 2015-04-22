@@ -1,6 +1,0 @@
-#
-# remove pool for MDB
-#
-if (outcome == success) of /subsystem=ejb3/strict-max-bean-instance-pool=log-file-generator-mdb-pool:read-resource
-    /subsystem=ejb3/strict-max-bean-instance-pool=log-file-generator-mdb-pool:remove
-end-if

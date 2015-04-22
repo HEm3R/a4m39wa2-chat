@@ -1,4 +1,16 @@
 #
+# create XA datasource
+#
+if (outcome != success) of /subsystem=datasources/xa-data-source=postgresXADS:read-resource
+    xa-data-source add --name=postgresXADS --driver-name=postgresql-9.4-1201.jdbc4.jar --jndi-name=java:jboss/datasources/postgresXADS --xa-datasource-class=org.postgresql.xa.PGXADataSource --user-name=a4m39wa2_chat --password=a4m39wa2_chat --no-recovery=true
+    /subsystem=datasources/xa-data-source=postgresXADS/xa-datasource-properties=ServerName:add(value=127.0.0.1)
+    /subsystem=datasources/xa-data-source=postgresXADS/xa-datasource-properties=PortNumber:add(value=5432)
+    /subsystem=datasources/xa-data-source=postgresXADS/xa-datasource-properties=DatabaseName:add(value=a4m39wa2_chat)
+end-if
+
+# -----------------------------------------------------------------------------
+
+#
 # add resource adapter
 #
 if (outcome == failed) of /subsystem=resource-adapters/resource-adapter=activemq-ra:read-resource
@@ -21,4 +33,13 @@ end-if
 if (outcome == failed) of /subsystem=resource-adapters/resource-adapter=activemq-ra/admin-objects=chatQueue:read-resource
     /subsystem=resource-adapters/resource-adapter=activemq-ra/admin-objects=chatQueue:add(class-name=org.apache.activemq.command.ActiveMQQueue, jndi-name=java:/activemq/chatQueue)
     /subsystem=resource-adapters/resource-adapter=activemq-ra/admin-objects=chatQueue/config-properties=PhysicalName:add(value=chatQueue)
+end-if
+
+# -----------------------------------------------------------------------------
+
+#
+# create new pool for MDB
+#
+if (outcome != success) of /subsystem=ejb3/strict-max-bean-instance-pool=log-file-generator-mdb-pool:read-resource
+    /subsystem=ejb3/strict-max-bean-instance-pool=log-file-generator-mdb-pool:add(max-pool-size=1, timeout=10, timeout-unit=MINUTES)
 end-if

@@ -1,0 +1,15 @@
+#
+# remove XA datasource
+#
+if (outcome == success) of /subsystem=datasources/xa-data-source=postgresXADS:read-resource
+    xa-data-source remove --name=postgresXADS
+end-if
+
+# -----------------------------------------------------------------------------
+
+#
+# remove resource adapter for activemq
+#
+if (outcome == success) of /subsystem=resource-adapters/resource-adapter=activemq-ra:read-resource
+    /subsystem=resource-adapters/resource-adapter=activemq-ra:remove
+end-if
